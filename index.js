@@ -23,11 +23,25 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const cardCollection = client.db("matrimony").collection("cards");
+    const requestedCollection = client.db("matrimony").collection("requested");
+    const usersCollection = client.db("matrimony").collection("users");
     const bookmarks = client.db("matrimony").collection("bookmarks");
     const reviews = client.db("matrimony").collection("reviews");
  app.post('/bookmarks',async(req,res)=>{
     const data=req.body
     const result=await  bookmarks.insertOne(data)
+    res.send(result)
+
+ })
+ app.post('/users',async(req,res)=>{
+    const data=req.body
+    const result=await  usersCollection.insertOne(data)
+    res.send(result)
+
+ })
+ app.post('/requested',async(req,res)=>{
+    const data=req.body
+    const result=await  requestedCollection.insertOne(data)
     res.send(result)
 
  })
@@ -45,6 +59,27 @@ app.get('/singleCard/:id', async (req, res) => {
     const result = await cardCollection.findOne(query);
     res.send(result);
   })
+app.get('/checkout/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id)  }
+    // const query = { biodataId: id }
+    const result = await cardCollection.findOne(query);
+
+    res.send(result);
+  })
+
+
+
+
+
+
+
+
+
+
+
+
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
