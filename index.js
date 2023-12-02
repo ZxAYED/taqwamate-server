@@ -1,9 +1,18 @@
 const express =require('express')
 const  cors =require('cors')
+var cookieParser = require('cookie-parser')
+
+
+
 const port = process.env.PORT || 5000 
 const app =express()
+const jwt=require('jsonwebtoken')
 require('dotenv').config();
-app.use(cors())
+
+app.use(cookieParser())
+app.use(cors({
+  origin :[ 'http://localhost:5173'],credentials:true
+}))
 app.use(express.json())
 
 
@@ -27,6 +36,25 @@ async function run() {
     const usersCollection = client.db("matrimony").collection("users");
     const bookmarks = client.db("matrimony").collection("bookmarks");
     const reviews = client.db("matrimony").collection("reviews");
+
+
+ app.post('/jwt',async(req,res)=>{
+  const user=req.body
+  const token =jwt.sign(
+   user
+  , process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 * 60 });
+  res.cookie('token',token,{
+    httpOnly:true,
+    secure:true
+  })
+  .send({token})
+ })   
+ app.post('/logOut',async(req,res)=>{
+    const data=req.body
+ 
+    res.clearCookie('token',{maxAge :0}).send({success:true})
+
+ })
  app.post('/bookmarks',async(req,res)=>{
     const data=req.body
     const result=await  bookmarks.insertOne(data)
@@ -55,29 +83,57 @@ app.get('/cards',async(req,res)=>{
     const result=await cardCollection.find().toArray()
     res.send(result)
 })
-app.get('/cards/users',async(req,res)=>{
+app.get('/bookmarks',async(req,res)=>{
   if(req.user.email!==req.query.email){
     return res.status(403).send({message:'Forbidden Access'})
   }
   let query = {};
   if (req.query?.email) {
-    query = { email: req.query.email };
+    query = { userEmail: req.query.email };
   }
 
   
 
-  const result =await cardCollection.find(query).toArray()
+  const result =await bookmarks.find(query).toArray()
   res.send(result)
+
+
  
 })
-app.delete('/RizkShare/availableFoods/:id',async(req,res)=>{
-  const id  =req.params.id
+// app.get('/cards/users',async(req,res)=>{
+//   if(req.user.email!==req.query.email){
+//     return res.status(403).send({message:'Forbidden Access'})
+//   }
+//   let query = {};
+//   if (req.query?.email) {
+//     query = { email: req.query.email };
+//   }
+
   
-  const query ={_id :new ObjectId(id)}
-  const result =await  availableFoods.deleteOne(query)
+
+//   const result =await cardCollection.find(query).toArray()
+//   res.send(result)
+ 
+// })
+app.delete('/bookmarks/:id',async(req,res)=>{
+  const id  =parseFloat(req.params.id)
+
+  const query ={biodataId :id}
+  const result =await  bookmarks.deleteOne(query)
   res.send(result)
   
   })
+
+app.patch('users/admin/:id',async(req,res)=>{
+  const id =req.params.id
+  const query={_id: new ObjectId(id)}
+  const options={upsert:true}
+ const Update={
+  $set:{ Role :'admin'}
+ }
+ const result= await usersCollection.updateOne(query,Update,options)
+ res.send(result)
+})
 app.patch('/cards/:id',async(req,res)=>{
   const data=req.body // desstructure kore boshano
   
