@@ -45,12 +45,90 @@ async function run() {
     res.send(result)
 
  })
+ app.post('/cards',async(req,res)=>{
+    const data=req.body
+    const result=await  cardCollection.insertOne(data)
+    res.send(result)
+
+ })
 app.get('/cards',async(req,res)=>{
     const result=await cardCollection.find().toArray()
     res.send(result)
 })
+app.get('/cards/users',async(req,res)=>{
+  if(req.user.email!==req.query.email){
+    return res.status(403).send({message:'Forbidden Access'})
+  }
+  let query = {};
+  if (req.query?.email) {
+    query = { email: req.query.email };
+  }
+
+  
+
+  const result =await cardCollection.find(query).toArray()
+  res.send(result)
+ 
+})
+app.delete('/RizkShare/availableFoods/:id',async(req,res)=>{
+  const id  =req.params.id
+  
+  const query ={_id :new ObjectId(id)}
+  const result =await  availableFoods.deleteOne(query)
+  res.send(result)
+  
+  })
+app.patch('/cards/:id',async(req,res)=>{
+  const data=req.body // desstructure kore boshano
+  
+const query ={_id :new ObjectId(id)}
+
+
+  const id =req.params.id
+  // const filter = { contactEmail: data.contactEmail };id
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: {
+      fathersName:data.fathersName ,
+      race,
+      age,
+      occupation,
+      dateOfBirth,
+      weight,
+      height,
+      profileImageLink,
+      name,
+      biodataType,
+      status,
+        mothersName,
+        permanentDivision,
+        presentDivision,
+        expectedPartnerAge,
+        expectedPartnerHeight,
+        expectedPartnerWeight,
+        phoneNumber,
+        contactEmail,
+        premiumMember
+    },
+  };
+    const result=await cardCollection.insertOne()
+    res.send(result)
+})
+app.get('/premium',async(req,res)=>{
+  
+  const query={premiumMember :'yes'}
+ 
+    const result=await cardCollection.find(query).sort({age: 1}).toArray()
+    res.send(result)
+})
 app.get('/users',async(req,res)=>{
     const result=await usersCollection.find().toArray()
+    res.send(result)
+})
+app.get('/cards/users',async(req,res)=>{
+  const query=req.query.email
+  console.log(query);
+    const result=await usersCollection.find(query)
     res.send(result)
 })
 app.get('/reviews',async(req,res)=>{
