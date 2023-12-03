@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(cookieParser())
 app.use(cors({
-  origin :[ 'http://localhost:5173'],credentials:true
+  origin :[ 'http://localhost:5173','https://z-matrimony-server.vercel.app'],credentials:true
 }))
 app.use(express.json())
 
@@ -83,38 +83,22 @@ app.get('/cards',async(req,res)=>{
     const result=await cardCollection.find().toArray()
     res.send(result)
 })
+app.get('/cards/user',async(req,res)=>{
+  const query={contactEmail:req.query.email}
+    const result=await cardCollection.find(query).toArray()
+    res.send(result)
+})
 app.get('/bookmarks',async(req,res)=>{
-  if(req.user.email!==req.query.email){
-    return res.status(403).send({message:'Forbidden Access'})
-  }
-  let query = {};
-  if (req.query?.email) {
-    query = { userEmail: req.query.email };
-  }
-
-  
-
+   const query = { UserEmail: req.query.email }
   const result =await bookmarks.find(query).toArray()
   res.send(result)
 
-
- 
 })
-// app.get('/cards/users',async(req,res)=>{
-//   if(req.user.email!==req.query.email){
-//     return res.status(403).send({message:'Forbidden Access'})
-//   }
-//   let query = {};
-//   if (req.query?.email) {
-//     query = { email: req.query.email };
-//   }
+
 
   
 
-//   const result =await cardCollection.find(query).toArray()
-//   res.send(result)
- 
-// })
+
 app.delete('/bookmarks/:id',async(req,res)=>{
   const id  =parseFloat(req.params.id)
 
@@ -123,22 +107,41 @@ app.delete('/bookmarks/:id',async(req,res)=>{
   res.send(result)
   
   })
+app.delete('/requested/:id',async(req,res)=>{
+  const id  =parseFloat(req.params.id)
 
-app.patch('users/admin/:id',async(req,res)=>{
+  const query ={biodataId :id}
+  const result =await  requestedCollection.deleteOne(query)
+  res.send(result)
+  
+  })
+
+app.patch('/users/admin/:id',async(req,res)=>{
   const id =req.params.id
   const query={_id: new ObjectId(id)}
-  const options={upsert:true}
+
  const Update={
   $set:{ Role :'admin'}
  }
- const result= await usersCollection.updateOne(query,Update,options)
+ const result= await usersCollection.updateOne(query,Update)
  res.send(result)
 })
-app.patch('/cards/:id',async(req,res)=>{
-  const data=req.body // desstructure kore boshano
+app.patch('/users/admin/premium/:id',async(req,res)=>{
+  const id =req.params.id
+  const query={biodataId: id}
+
+ const Update={
+  $set:{ Role :'premium'}
+ }
+ const result= await usersCollection.updateOne(query,Update)
+ res.send(result)
+})
+app.put('/cards/:id',async(req,res)=>{
+
+  // desstructure kore boshano
   
 const query ={_id :new ObjectId(id)}
-
+// const data=req.body
 
   const id =req.params.id
   // const filter = { contactEmail: data.contactEmail };id
@@ -167,7 +170,7 @@ const query ={_id :new ObjectId(id)}
         premiumMember
     },
   };
-    const result=await cardCollection.insertOne()
+    const result=await cardCollection.updateOne()
     res.send(result)
 })
 app.get('/premium',async(req,res)=>{
@@ -182,9 +185,17 @@ app.get('/users',async(req,res)=>{
     res.send(result)
 })
 app.get('/cards/users',async(req,res)=>{
-  const query=req.query.email
-  console.log(query);
-    const result=await usersCollection.find(query)
+  const item=req.query.email
+  const query={UserEmail :req.query.email}
+
+    const result=await usersCollection.find(query).toArray()
+    res.send(result)
+})
+app.get('/requested/user',async(req,res)=>{
+
+  const query={UserEmail :req.query.email}
+
+    const result=await requestedCollection.find(query).toArray()
     res.send(result)
 })
 app.get('/reviews',async(req,res)=>{
@@ -200,7 +211,6 @@ app.get('/singleCard/:id', async (req, res) => {
 app.get('/checkout/:id', async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id)  }
-    // const query = { biodataId: id }
     const result = await cardCollection.findOne(query);
 
     res.send(result);
@@ -218,7 +228,7 @@ app.get('/checkout/:id', async (req, res) => {
 
 
 
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
  
