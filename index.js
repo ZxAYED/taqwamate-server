@@ -36,6 +36,7 @@ async function run() {
     const usersCollection = client.db("matrimony").collection("users");
     const bookmarks = client.db("matrimony").collection("bookmarks");
     const reviews = client.db("matrimony").collection("reviews");
+    const premiumReq = client.db("matrimony").collection("premiumReq");
 
 
  app.post('/jwt',async(req,res)=>{
@@ -79,8 +80,18 @@ async function run() {
     res.send(result)
 
  })
+ app.post('/premiumReq',async(req,res)=>{
+    const data=req.body
+    const result=await  premiumReq.insertOne(data)
+    res.send(result)
+
+ })
 app.get('/cards',async(req,res)=>{
     const result=await cardCollection.find().toArray()
+    res.send(result)
+})
+app.get('/premiumReq',async(req,res)=>{
+    const result=await premiumReq.find().toArray()
     res.send(result)
 })
 app.get('/cards/user',async(req,res)=>{
@@ -115,6 +126,14 @@ app.delete('/requested/:id',async(req,res)=>{
   res.send(result)
   
   })
+app.delete('/premiumReq/:id',async(req,res)=>{
+  const id  =req.params.id
+
+  const query ={UserEmail :id}
+  const result =await  premiumReq.deleteOne(query)
+  res.send(result)
+  
+  })
 
 app.patch('/users/admin/:id',async(req,res)=>{
   const id =req.params.id
@@ -128,7 +147,7 @@ app.patch('/users/admin/:id',async(req,res)=>{
 })
 app.patch('/users/admin/premium/:id',async(req,res)=>{
   const id =req.params.id
-  const query={biodataId: id}
+  const query={UserEmail: id}
 
  const Update={
   $set:{ Role :'premium'}
@@ -136,41 +155,59 @@ app.patch('/users/admin/premium/:id',async(req,res)=>{
  const result= await usersCollection.updateOne(query,Update)
  res.send(result)
 })
-app.put('/cards/:id',async(req,res)=>{
-
-  // desstructure kore boshano
-  
-const query ={_id :new ObjectId(id)}
-// const data=req.body
-
+app.patch('/users/admin/approve/:id',async(req,res)=>{
   const id =req.params.id
-  // const filter = { contactEmail: data.contactEmail };id
+
+  const query={UserEmail: id}
+
+ const Update={
+  $set:{ status :'available'}
+ }
+ const result= await requestedCollection.updateOne(query,Update)
+ res.send(result)
+})
+app.put('/cards/:id',async(req,res)=>{
+  const id =req.params.id
+const data=req.body
+const   {fathersName,race,age,occupation,dateOfBirth,weight,height,profileImageLink,name,biodataType,status,
+mothersName,
+permanentDivision,
+presentDivision,
+expectedPartnerAge,
+expectedPartnerHeight,
+expectedPartnerWeight,
+phoneNumber,
+contactEmail,
+biodataId,Role} =data
+const query ={_id :new ObjectId(id)}
+
+
   const options = { upsert: true };
   const updateDoc = {
     $set: {
-      fathersName:data.fathersName ,
-      race,
-      age,
-      occupation,
-      dateOfBirth,
-      weight,
-      height,
-      profileImageLink,
-      name,
-      biodataType,
-      status,
-        mothersName,
-        permanentDivision,
-        presentDivision,
-        expectedPartnerAge,
-        expectedPartnerHeight,
-        expectedPartnerWeight,
-        phoneNumber,
-        contactEmail,
-        premiumMember
+      fathersName:fathersName2 ,
+      race :race2 ,
+      age :age2,
+      occupation :occupation2,
+      dateOfBirth :dateOfBirth2,
+      weight :weight2,
+      height :height2,
+      profileImageLink :profileImageLink2,
+      name :name2,
+      biodataType :biodataType2,
+      status : status2,
+        mothersName  :mothersName2,
+        permanentDivision :permanentDivision2 ,  
+        presentDivision :presentDivision2,
+        expectedPartnerAge :expectedPartnerAge2,
+        expectedPartnerHeight:expectedPartnerHeight2,
+        expectedPartnerWeight :expectedPartnerWeight2,
+        phoneNumber :phoneNumber2,
+        contactEmail :contactEmail2,
+        premiumMember :premiumMember2
     },
   };
-    const result=await cardCollection.updateOne()
+    const result=await cardCollection.updateOne(query,updateDoc,options)()
     res.send(result)
 })
 app.get('/premium',async(req,res)=>{
@@ -200,6 +237,15 @@ app.get('/requested/user',async(req,res)=>{
 })
 app.get('/reviews',async(req,res)=>{
     const result=await reviews.find().toArray()
+    res.send(result)
+})
+app.get('/requested',async(req,res)=>{
+    const result=await requestedCollection.find().toArray()
+    res.send(result)
+})
+app.post('/reviews',async(req,res)=>{
+  const data=req.body
+    const result=await reviews.insertOne(data)
     res.send(result)
 })
 app.get('/singleCard/:id', async (req, res) => {
