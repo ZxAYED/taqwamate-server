@@ -163,22 +163,22 @@ app.patch('/users/admin/approve/:id',async(req,res)=>{
  const Update={
   $set:{ status :'available'}
  }
- const result= await requestedCollection.updateOne(query,Update)
+ const result= await requestedCollection.updateMany(query,Update)
  res.send(result)
 })
 app.put('/cards/:id',async(req,res)=>{
   const id =req.params.id
 const data=req.body
-const   {fathersName,race,age,occupation,dateOfBirth,weight,height,profileImageLink,name,biodataType,status,
-mothersName,
-permanentDivision,
-presentDivision,
-expectedPartnerAge,
-expectedPartnerHeight,
-expectedPartnerWeight,
-phoneNumber,
-contactEmail,
-biodataId,Role} =data
+const   {fathersName2,race2,age2,occupation2,dateOfBirth2,weight2,height2,profileImageLink2,name2,biodataType2,status2,
+mothersName2,
+permanentDivision2,
+presentDivision2,
+expectedPartnerAge2,
+expectedPartnerHeight2,
+expectedPartnerWeight2,
+phoneNumber2,
+contactEmail2,
+biodataId2,Role2} =data
 const query ={_id :new ObjectId(id)}
 
 
@@ -204,10 +204,12 @@ const query ={_id :new ObjectId(id)}
         expectedPartnerWeight :expectedPartnerWeight2,
         phoneNumber :phoneNumber2,
         contactEmail :contactEmail2,
-        premiumMember :premiumMember2
+     
+        biodataId:biodataId2,
+        Role:Role2
     },
   };
-    const result=await cardCollection.updateOne(query,updateDoc,options)()
+    const result=await cardCollection.updateOne(query,updateDoc,options)
     res.send(result)
 })
 app.get('/premium',async(req,res)=>{
